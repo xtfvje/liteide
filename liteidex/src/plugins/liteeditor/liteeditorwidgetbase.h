@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -84,7 +84,6 @@ public:
 signals:
     void navigationStateChanged(const QByteArray &array);
     void overwriteModeChanged(bool);
-    void wordWrapChanged(bool);
     void updateLink(const QTextCursor &curosr, const QPoint &pos, bool nav);
 public:
     void saveCurrentCursorPositionForNavigation();
@@ -93,6 +92,7 @@ public:
 protected:
     QByteArray m_tempNavigationState;
 public slots:
+    void verticalScrollBarRangeChanged(int minnum,int maxnum);
     void cleanWhitespace(bool wholeDocument = false);
     void editContentsChanged(int position, int charsRemoved, int charsAdded);
     virtual void highlightCurrentLine();
@@ -105,8 +105,6 @@ public slots:
     QChar characterAt(int pos) const;
     void handleHomeKey(bool anchor);    
     void setFindOption(LiteApi::FindOption *opt);
-    void setWordWrapOverride(bool wrap);
-    void setDefaultWordWrap(bool wrap);
 public slots:
     void gotoMatchBrace();
     void gotoLine(int blockNumber, int column, bool center, int selection = 0) ;
@@ -172,6 +170,10 @@ public slots:
     void convertCaseUpper();
     void convertCaseLower();
     void convertCaseSwap();
+
+    void convertTabToSpaces();
+    void convertSpacesToTab();
+    void switchTabToSpace(bool tabtospace);
 public:
     void setMaxTipInfoLines(int maxLines) {
         m_maxTipInfoLines = maxLines;
@@ -247,8 +249,12 @@ public:
     bool indentLineVisible() const {
         return m_indentLineVisible;
     }
-    bool isWordWrap() const;
-    void setWordWrap(bool wrap);
+    void setAllowVscrollLastLine(bool b);
+    bool allowVscrollLastLine() const {
+        return m_allowVscrollLastLine;
+    }
+    bool isLineWrap() const;
+    void setLineWrap(bool wrap);
     void maybeSelectLine();
     bool isSpellCheckingAt(QTextCursor cur) const;
     void showLink(const LiteApi::Link &link);
@@ -333,15 +339,13 @@ protected:
     LiteApi::Link       m_currentLink;
     QString m_mimeType;
     bool m_moveLineUndoHack;
-    bool m_defaultWordWrap;
-    bool m_wordWrapOverridden;
-    bool m_wordWrap;
     bool m_lineNumbersVisible;
     bool m_navigateWidgetVisible;
     bool m_marksVisible;    
     bool m_codeFoldingVisible;
     bool m_rightLineVisible;
     bool m_eofVisible;
+    bool m_allowVscrollLastLine;
     int  m_rightLineWidth;
     int  m_maxTipInfoLines;
     int  m_inputCursorOffset;

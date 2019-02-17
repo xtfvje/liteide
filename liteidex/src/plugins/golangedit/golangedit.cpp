@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@
 #include <QApplication>
 #include <QToolTip>
 #include <QRegExp>
+#include <QToolButton>
 
 //lite_memory_check_begin
 #if defined(WIN32) && defined(_MSC_VER) &&  defined(_DEBUG)
@@ -416,6 +417,15 @@ void GolangEdit::editorCreated(LiteApi::IEditor *editor)
             m_editor->setLineEndUnix(true);
         }
     }
+    QToolBar *toolBar = LiteApi::getEditToolBar(editor);
+    if (toolBar) {
+        toolBar->addSeparator();
+        //toolBar->addAction(m_jumpDeclAct);
+        QToolButton *btn = new QToolButton(toolBar);
+        btn->setDefaultAction(m_jumpDeclAct);
+        btn->setIcon(QIcon("icon:liteeditor/images/goto.png"));
+        toolBar->addWidget(btn);
+    }
 }
 
 void GolangEdit::currentEditorChanged(LiteApi::IEditor *editor)
@@ -525,7 +535,7 @@ void GolangEdit::updateLink(const QTextCursor &cursor, const QPoint &pos, bool n
     QStringList args;
     if (m_useGocodeInfo) {
         cmd  = getGocode(m_liteApp);
-        args << "liteide_typesinfo" << info.fileName() << QString("%1").arg(offset);
+        args << "liteide_typesinfo" << info.fileName() << QString("%1").arg(offset) << selectionUnderCursor(cursor);
     } else {
         cmd = LiteApi::getGotools(m_liteApp);
         args << "types";
@@ -639,7 +649,7 @@ void GolangEdit::editorJumpToDecl()
     QStringList args;
     if (m_useGocodeInfo) {
         cmd  = getGocode(m_liteApp);
-        args << "liteide_typesinfo" << info.fileName() << QString("%1").arg(offset);
+        args << "liteide_typesinfo" << info.fileName() << QString("%1").arg(offset) << selectionUnderCursor(m_lastCursor,moveLeft);
     } else {
         cmd = LiteApi::getGotools(m_liteApp);
         args << "types";
@@ -729,7 +739,7 @@ void GolangEdit::editorFindInfo()
     QStringList args;
     if (m_useGocodeInfo) {
         cmd  = getGocode(m_liteApp);
-        args << "liteide_typesinfo" << info.fileName() << QString("%1").arg(offset);
+        args << "liteide_typesinfo" << info.fileName() << QString("%1").arg(offset) << selectionUnderCursor(m_lastCursor,moveLeft);
     } else {
         cmd = LiteApi::getGotools(m_liteApp);
         args << "types";
@@ -806,7 +816,8 @@ void GolangEdit::findDefFinish(int code,QProcess::ExitStatus status)
         QString fileName = info.left(pos);
         int line = reg.cap(1).toInt();
         int col = reg.cap(2).toInt();
-        LiteApi::gotoLine(m_liteApp,fileName,line-1,col-1,true,false);
+        col = byteOffsetToColumn(fileName,line,col);
+        LiteApi::gotoLine(m_liteApp,fileName,line-1,col-1,true,true);
     }
 }
 
@@ -895,6 +906,50 @@ static QStringList FindSourceInfo(LiteApi::IApplication *app, const QString &fil
     return lines;
 }
 
+static QString FindSourceBlock(LiteApi::IApplication *app, const QString &fileName, int blockNumber) {
+    QString lines;
+    LiteApi::IEditor *edit = app->editorManager()->findEditor(fileName,true);
+    if (edit) {
+        QPlainTextEdit *ed = LiteApi::getPlainTextEdit(edit);
+        if (ed) {
+            QTextBlock block = ed->document()->findBlockByNumber(blockNumber);
+            if (block.isValid()) {
+                lines = block.text();
+            }
+        }
+    } else {
+        QFile f(fileName);
+        if (f.open(QFile::ReadOnly)) {
+            QTextStream stream(&f);
+            stream.setCodec("utf-8");
+            int curLine = 0;
+            QString text;
+            while(!stream.atEnd()) {
+                text = stream.readLine();
+                if (curLine == blockNumber) {
+                    lines = text;
+                    break;
+                }
+                curLine++;
+            }
+        }
+    }
+    return lines;
+}
+
+
+int GolangEdit::byteOffsetToColumn(const QString &fileName, int line, int col)
+{
+    QString block = FindSourceBlock(m_liteApp,fileName,line-1);
+    if (!block.isEmpty()) {
+        QByteArray line = block.toUtf8();
+        if (col > 0) {
+            return QString::fromUtf8(line.left(col)).length();
+        }
+    }
+    return col;
+}
+
 void GolangEdit::findLinkFinish(int code,QProcess::ExitStatus)
 {
     if (code != 0) {
@@ -913,6 +968,7 @@ void GolangEdit::findLinkFinish(int code,QProcess::ExitStatus)
                         QString fileName = fileInfo.left(pos);
                         int line = reg.cap(1).toInt();
                         int col = reg.cap(2).toInt();
+                        col = byteOffsetToColumn(fileName,line,col);
 
                         bool importExtra = false;
                         //parser import line extra info
@@ -1088,17 +1144,17 @@ void GolangEdit::dbclickSourceQueryOutput(const QTextCursor &cursor)
     if (!ok)
         return;
     int col = fileCol.toInt(&ok);
-    if (ok) {
-        col--;
-    } else {
-        col = 0;
+    if (!ok) {
+        col = 1;
     }
 
     QDir dir(m_sourceQueryInfo.workPath);
     if (!QFileInfo(fileName).isAbsolute()) {
         fileName = dir.filePath(fileName);
     }
-    if (LiteApi::gotoLine(m_liteApp,fileName,line-1,col,true,true)) {
+
+    col = byteOffsetToColumn(fileName,line,col);
+    if (LiteApi::gotoLine(m_liteApp,fileName,line-1,col-1,true,true)) {
         m_sourceQueryOutput->setTextCursor(cur);
     }
 }

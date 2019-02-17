@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -119,6 +119,7 @@ public slots:
     void goRemoveTags();
     void execGoModifyTags(const QString &args);
     QString getGoModifyTagsInfo() const;
+    int byteOffsetToColumn(const QString &fileName, int line, int col);
 protected:
     LiteApi::IApplication *m_liteApp;
     LiteApi::ILiteEditor  *m_editor;
@@ -134,6 +135,7 @@ protected:
     LiteApi::Link m_lastLink;
     QAction *m_findInfoAct;
     QAction *m_jumpDeclAct;
+    QAction *m_jumpDeclToolBarAct;
     QAction *m_findUseAct;
     QAction *m_findUseGlobalAct;
     QAction *m_findUseSkipGorootAct;

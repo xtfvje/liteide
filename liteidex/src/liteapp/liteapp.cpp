@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -72,7 +72,8 @@
 #endif
 //lite_memory_check_end
 
-#define LITEIDE_VERSION "X35.2"
+#define LITEIDE_VERSION "X35.5"
+
 
 QString LiteApp::getRootPath()
 {
@@ -645,7 +646,7 @@ QString LiteApp::ideName() const
 QString LiteApp::ideCopyright() const
 {
     static QString s_info =
-    "2011-2018(c)\n"
+    "2011-2019(c)\n"
     "visualfc@gmail.com\n"
     "\n"
     "https://github.com/visualfc/liteide\n";

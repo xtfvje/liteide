@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -46,6 +46,7 @@ public slots:
     void reloadFileModel();
     void currentEditorChanged(LiteApi::IEditor*);
     void aboutToShowContextMenu(QMenu* menu,LiteApi::FILESYSTEM_CONTEXT_FLAG flag,const QFileInfo &fileInfo);
+    void fmctxFileSearchAction();
 protected slots:
     void setFolderToRoot();
     void cdUp();
@@ -79,6 +80,7 @@ protected:
     QAction *m_addToFoldersAct;
     QAction *m_executeFileAct;
     QAction *m_debugFileAct;
+    QAction *m_fmctxFileSearchAction;
 };
 
 #endif // FILEBROWSER_H

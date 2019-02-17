@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -91,6 +91,7 @@ public:
     virtual QString searchText() const;
     virtual bool replaceMode() const { return false; }
     virtual bool canCancel() const { return true; }
+    virtual void setSearchInfo(const QString &text, const QString &filter, const QString &path);
 public slots:
     void findInFiles();
     void browser();

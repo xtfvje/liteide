@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -68,6 +68,11 @@ void OptionManager::removeFactory(IOptionFactory *factory)
 QList<IOptionFactory*> OptionManager::factoryList() const
 {
     return m_factoryList;
+}
+
+void OptionManager::emitApplyOption(QString mimetype)
+{
+    emit applyOption(mimetype);
 }
 
 void OptionManager::exec()

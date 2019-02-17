@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -32,14 +32,16 @@
 #  define LITEEDITORSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+#define MIMETYPE_TABWIDTH "mimetype/tabwidth/"
+#define MIMETYPE_TABTOSPACE "mimetype/tabtospace/"
+#define MIMETYPE_LINEWRAP "mimetype/linewrap/"
+
 #define OPTION_LITEEDITOR "option/liteeditor"
 #define EDITOR_STYLE "editor/style"
 #define EDITOR_FAMILY "editor/family"
 #define EDITOR_FONTSIZE "editor/fontsize"
 #define EDITOR_FONTZOOM "editor/fontzoom"
 #define EDITOR_ANTIALIAS "editor/antialias"
-#define EDITOR_TABWIDTH "editor/tabwidth/"
-#define EDITOR_TABTOSPACES "editor/tabtospaces/"
 #define EDITOR_CUSTOMEXTENSION "editor/customextension/"
 #define EDITOR_NOPRINTCHECK "editor/noprintcheck"
 #define EDITOR_AUTOINDENT "editor/autoindent"
@@ -66,5 +68,6 @@
 #define EDITOR_INDENTLINEVISIBLE "editor/indentlinevisible"
 #define EDITOR_WHEEL_SCROLL "editor/whellscroll"
 #define EDITOR_ENABLE_COPYTOHTML "editor/enablecopytohtml"
+#define EDITOR_ALLOW_VSCROLL_LASTLINE "editor/allowvscrolllastline"
 
 #endif // LITEEDITOR_GLOBAL_H

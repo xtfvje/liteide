@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -64,7 +64,7 @@ public:
         m_info->setId("plugin/LiteFind");
         m_info->setName("LiteFind");
         m_info->setAuthor("visualfc");
-        m_info->setVer("X33.1");
+        m_info->setVer("X35.5");
         m_info->setInfo("Core Find/Replace");
         m_info->setMustLoad(true);
     }

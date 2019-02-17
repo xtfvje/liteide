@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -88,6 +88,11 @@ bool GolangFileSearch::replaceMode() const
     return m_replaceMode;
 }
 
+void GolangFileSearch::setSearchInfo(const QString &/*text*/, const QString &/*filter*/, const QString &/*path*/)
+{
+
+}
+
 void GolangFileSearch::findUsages(LiteApi::ITextEditor *editor, QTextCursor cursor, bool global, bool skip_goroot, bool replace)
 {
     if (!m_process->isStop()) {
@@ -131,6 +136,10 @@ void GolangFileSearch::findUsages(LiteApi::ITextEditor *editor, QTextCursor curs
     args << QString("\"%1:%2\"").arg(info.fileName()).arg(offset);
     args << "-info";
     args << "-use";
+    QString text = selectionUnderCursor(cursor,moveLeft);
+    if (!text.isEmpty()) {
+        args << "-text" << text;
+    }
     if (global) {
         args << "-all";
     }
@@ -198,10 +207,15 @@ void GolangFileSearch::findUsagesOutput(QByteArray data, bool bStdErr)
                         if (fileLine == m_lastLine) {
                             m_lastLineText = QString::fromUtf8(trimmedRight(line));
                             if (fileCol > 0) {
-                                fileCol = QString::fromUtf8(line.left(fileCol)).length();
+                               fileCol = QString::fromUtf8(line.left(fileCol)).length();
                             }
                             break;
                         }
+                    }
+                } else {
+                    QByteArray line = m_lastLineText.toUtf8();
+                    if (fileCol > 0) {
+                       fileCol = QString::fromUtf8(line.left(fileCol)).length();
                     }
                 }
                 emit findResult(LiteApi::FileSearchResult(fileName,m_lastLineText,fileLine,fileCol-1,m_searchText.length()));

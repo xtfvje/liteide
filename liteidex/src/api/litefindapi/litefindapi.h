@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -59,6 +59,7 @@ public:
     virtual QString searchText() const = 0;
     virtual bool replaceMode() const = 0;    
     virtual bool canCancel() const = 0;
+    virtual void setSearchInfo(const QString &text, const QString &filter, const QString &path) = 0;
 signals:
     void searchTextChanged(const QString &text);
     void findStarted();
@@ -76,6 +77,7 @@ public:
     virtual IFileSearch *findFileSearch(const QString &mime) = 0;
     virtual QList<IFileSearch*> fileSearchList() const = 0;
     virtual void setCurrentSearch(LiteApi::IFileSearch *search) = 0;
+    virtual void showFileSearch(const QString &text, const QString &filter, const QString &path) = 0;
 public slots:
     virtual void newSearch() = 0;
 };

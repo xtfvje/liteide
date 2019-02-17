@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -120,6 +120,8 @@ public:
     virtual QString scheme() const = 0;
     virtual QString comment() const = 0;
     virtual QString codec() const = 0;
+    virtual bool tabToSpace() const = 0;
+    virtual int tabWidth() const = 0;
     virtual QStringList globPatterns() const = 0;
     virtual QStringList subClassesOf() const = 0;
     virtual void merge(const IMimeType *mimeType) = 0;
@@ -387,8 +389,8 @@ public:
     virtual int column() const = 0;
     virtual int utf8Position(bool realFile = false, int pos = -1) const = 0;
     virtual QByteArray utf8Data() const = 0;
-    virtual void setWordWrap(bool wrap) = 0;
-    virtual bool wordWrap() const = 0;
+    virtual void setLineWrap(bool wrap) = 0;
+    virtual bool isLineWrap() const = 0;
     virtual void gotoLine(int blockNumber, int column, bool center = false, int selection = 0) = 0;
     virtual void setFindOption(FindOption *opt) = 0;
     virtual int position(PositionOperation posOp = Current, int at = -1) const = 0;
@@ -586,6 +588,7 @@ public:
     virtual void addFactory(IOptionFactory *factory) = 0;
     virtual void removeFactory(IOptionFactory *factory) = 0;
     virtual QList<IOptionFactory*> factoryList() const = 0;
+    virtual void emitApplyOption(QString mimetype) = 0;
 public slots:
     virtual void exec() = 0;
 signals:
@@ -940,7 +943,7 @@ inline QString findPackageByMimeType(LiteApi::IApplication *app, const QString m
 
 } //namespace LiteApi
 
-Q_DECLARE_INTERFACE(LiteApi::IPluginFactory,"LiteApi.IPluginFactory.X35")
+Q_DECLARE_INTERFACE(LiteApi::IPluginFactory,"LiteApi.IPluginFactory.X35.3")
 
 
 #endif //LITEAPI_H

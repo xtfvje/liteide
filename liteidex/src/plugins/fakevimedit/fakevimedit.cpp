@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -140,9 +140,17 @@ void FakeVimEdit::_removeFakeVimFromEditor(LiteApi::IEditor *editor){
         return;
     }
     QString mime = editor->mimeType();
-    int tabWidth = m_liteApp->settings()->value(EDITOR_TABWIDTH+mime,4).toInt();
-    bool useSpace = m_liteApp->settings()->value(EDITOR_TABTOSPACES+mime,false).toBool();
-    ed->setTabOption(tabWidth,useSpace);
+
+    bool tabToSpace = false;
+    int tabWidth = 4;
+    LiteApi::IMimeType *im = m_liteApp->mimeTypeManager()->findMimeType(mime);
+    if (im) {
+        tabToSpace = im->tabToSpace();
+        tabWidth = im->tabWidth();
+    }
+    tabWidth = m_liteApp->settings()->value(MIMETYPE_TABWIDTH+mime,tabWidth).toInt();
+    tabToSpace = m_liteApp->settings()->value(MIMETYPE_TABTOSPACE+mime,tabToSpace).toBool();
+    ed->setTabOption(tabWidth,tabToSpace);
 
     QPlainTextEdit *ped = LiteApi::getPlainTextEdit(ed);
 
@@ -299,12 +307,13 @@ void FakeVimEdit::currentEditorChanged(LiteApi::IEditor *editor)
     QPlainTextEdit *ped = LiteApi::getPlainTextEdit(editor);
 
     if (m_enableUseFakeVim){
-        if(m_editorMap.contains(ped))
-            return;
-        else
+        if(!m_editorMap.contains(ped)) {
             _addFakeVimToEditor(editor);
+        }
     }else{
-        _removeFakeVimFromEditor(editor);
+        if (m_editorMap.contains(ped)) {
+            _removeFakeVimFromEditor(editor);
+        }
     }
 }
 

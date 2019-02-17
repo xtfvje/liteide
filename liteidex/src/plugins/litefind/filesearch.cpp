@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@
 #include <QAction>
 #include <QCompleter>
 #include <QDebug>
+#include "editorutil/checkdata.h"
 //lite_memory_check_begin
 #if defined(WIN32) && defined(_MSC_VER) &&  defined(_DEBUG)
      #define _CRTDBG_MAP_ALLOC
@@ -94,6 +95,12 @@ void FindThread::findFile(const QRegExp &reg, const QString &fileName)
     if (!file.open(QIODevice::ReadOnly)) {
         return;
     }
+    //skip binary data
+    QByteArray head = file.read(32);
+    if (HasBinaryData(head,32)) {
+        return;
+    }
+    file.seek(0);
 
     QTextStream stream(&file);
     stream.setCodec("utf-8");
@@ -410,6 +417,13 @@ void FileSearch::activate()
 QString FileSearch::searchText() const
 {
     return m_thread->findText;
+}
+
+void FileSearch::setSearchInfo(const QString &text, const QString &filter, const QString &path)
+{
+    m_findCombo->setEditText(text);
+    m_filterCombo->setEditText(filter);
+    m_findPathCombo->setEditText(path);
 }
 
 void FileSearch::findInFiles()

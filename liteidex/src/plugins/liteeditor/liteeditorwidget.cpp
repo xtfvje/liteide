@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -201,17 +201,16 @@ void LiteEditorWidget::keyPressEvent(QKeyEvent *e)
         }
     }
 
+    LiteEditorWidgetBase::keyPressEvent(e);
+
     bool isInImport = false;
     if (m_textLexer->isInStringOrComment(this->textCursor())) {
         isInImport = m_textLexer->isInImport(this->textCursor());
         if (!isInImport) {
-            LiteEditorWidgetBase::keyPressEvent(e);
             m_completer->hidePopup();
             return;
         }
     }
-
-    LiteEditorWidgetBase::keyPressEvent(e);
 
     const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
 
@@ -239,9 +238,6 @@ void LiteEditorWidget::keyPressEvent(QKeyEvent *e)
     //import line
     if (isInImport) {
         QString completionPrefix = importUnderCursor(textCursor());
-        if (completionPrefix.isEmpty()) {
-            return;
-        }
         m_completer->setCompletionContext(LiteApi::CompleterImportContext);
         m_completer->setCompletionPrefix("");
         m_completer->startCompleter(completionPrefix);

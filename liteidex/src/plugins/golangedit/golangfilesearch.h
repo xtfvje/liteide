@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,33 @@ inline QByteArray trimmedRight(const QByteArray &d)
     return d.left(end+1);
 }
 
+inline QString selectionUnderCursor(QTextCursor tc, bool moveLeft = false)
+{
+    QString text = tc.block().text();
+    if (tc.hasSelection()) {
+        moveLeft = false;
+    }
+    int pos = tc.selectionStart() - tc.block().position();
+    if (moveLeft) {
+        pos--;
+    }
+    int left = pos;
+    for (int i = pos; i >= 0; i--) {
+        if (!text[i].isLetterOrNumber() && text[i] != '.') {
+            left = i;
+            break;
+        }
+    }
+    int right = text.length();
+    for (int i = pos; i < text.length(); i++) {
+        if (!text[i].isLetterOrNumber())  {
+            right = i;
+            break;
+        }
+    }
+    return text.mid(left+1,right-left-1);
+}
+
 class GolangFileSearch : public LiteApi::IFileSearch
 {
     Q_OBJECT
@@ -56,6 +83,7 @@ public:
     virtual QString searchText() const;
     virtual bool replaceMode() const;
     virtual bool canCancel() const { return false; }
+    virtual void setSearchInfo(const QString &text, const QString &fitler, const QString &path);
     void findUsages(LiteApi::ITextEditor *editor, QTextCursor cursor, bool global, bool skip_goroot, bool replace);
 public slots:
     void findUsagesStarted();

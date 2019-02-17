@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -484,29 +484,50 @@ int CodeCompleterProxyModel::filter(const QString &filter, int cs, LiteApi::Comp
             }
             return m_items.size();
         }
-        bool hasSep = filter.contains("/");
-        if (hasSep) {
-            foreach (QString import, m_importList) {
-                if (import.startsWith(filter)) {
-                    m_items.append(new QStandardItem(icon,import));
-                }
-            }
-        } else {
-            QList<QStandardItem*> items;
-            foreach (QString import, m_importList) {
-                if (import.contains("/")) {
-                    foreach (QString path, import.split("/")) {
-                        if (path.startsWith(filter)) {
-                            items.append(new QStandardItem(icon,import));
+        QList<QStandardItem*> best;
+        QList<QStandardItem*> second;
+        QList<QStandardItem*> other;
+        int sep = filter.lastIndexOf("/");
+        QString root = filter.left(sep+1);
+        QString check = filter.mid(sep+1);
+        foreach (QString import, m_importList) {
+            if (import.startsWith(root)) {
+                QString text = import.mid(sep+1);
+                if (text.contains("/")) {
+                    foreach (QString path, text.split("/")) {
+                        int n = path.indexOf(check);
+                        if (n == 0) {
+                            if (check == path) {
+                                best.append(new QStandardItem(icon,import));
+                            } else {
+                                second.append(new QStandardItem(icon,import));
+                            }
+                            break;
+                        } else if (n > 0) {
+                            other.append(new QStandardItem(icon,import));
                             break;
                         }
                     }
-                } else if (import.startsWith(filter)) {
-                    m_items.append(new QStandardItem(icon,import));
+                } else {
+                    int n = text.indexOf(check);
+                    if (n == 0) {
+                        if (check == text) {
+                            best.append(new QStandardItem(icon,import));
+                        } else {
+                            second.append(new QStandardItem(icon,import));
+                        }
+                    } else if (n > 0) {
+                        other.append(new QStandardItem(icon,import));
+                    }
                 }
             }
-            m_items.append(items);
         }
+        qStableSort(best.begin(), best.end(), ContentLessThan(filter));
+        qStableSort(second.begin(), second.end(), ContentLessThan(filter));
+        qStableSort(other.begin(), other.end(), ContentLessThan(filter));
+        m_items.append(best);
+        m_items.append(second);
+        m_items.append(other);
         return m_items.size();
     }
     QModelIndex parentIndex;

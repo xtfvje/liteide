@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -94,8 +94,8 @@ public:
     virtual int column() const;
     virtual int utf8Position(bool realFile, int pos = -1) const;
     virtual QByteArray utf8Data() const;
-    virtual void setWordWrap(bool wrap);
-    virtual bool wordWrap() const;
+    virtual void setLineWrap(bool wrap);
+    virtual bool isLineWrap() const;
     virtual void gotoLine(int blockNumber, int column, bool center, int selection = 0);
     virtual int position(PositionOperation posOp = Current, int at = -1) const;
     virtual QString textAt(int pos, int length) const;
@@ -153,8 +153,9 @@ public slots:
     void comment();
     void blockComment();
     void autoIndent();
-    void tabToSpacesToggled(bool b);
+    void toggledTabToSpaces(bool b);
     void toggledVisualizeWhitespace(bool b);
+    void toggledLineWrapMode(bool b);
     void triggeredLineEnding(QAction *action);
     void broadcast(const QString &module, const QString &id, const QString &param);
 public:
@@ -204,7 +205,6 @@ protected:
     QAction *m_lockAct;
     QAction *m_unlockAct;
     QAction *m_cleanWhitespaceAct;
-    QAction *m_wordWrapAct;
     QAction *m_codeCompleteAct;
     LiteEditorFile *m_file;
     QMenu   *m_editMenu;
@@ -221,7 +221,8 @@ protected:
     QAction *m_commentAct;
     QAction *m_blockCommentAct;
     QAction *m_autoIndentAct;
-    QAction *m_tabToSpacesAct;
+    QAction *m_mimeLineWrapAct;
+    QAction *m_mimeTabToSpacesAct;
     QAction *m_lineEndingWindowAct;
     QAction *m_lineEndingUnixAct;
     QAction *m_visualizeWhitespaceAct;
@@ -250,6 +251,9 @@ protected:
     QAction *m_convertCaseUpperAct;
     QAction *m_convertCaseLowerAct;
     QAction *m_convertCaseSwapAct;
+
+    QAction *m_convertTabToSpaces;
+    QAction *m_convertSpacesToTab;
 };
 
 class EditContext : public LiteApi::IEditContext

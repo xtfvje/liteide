@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -230,9 +230,11 @@ void LiteCompleter::showPopup()
     }
     QTextCursor cursor = m_editor->textCursor();
     int offset = m_completer->completionPrefix().length();
-    int pos = m_completer->completionPrefix().indexOf(m_completer->separator());
-    if (pos != -1) {
-        offset -= pos+1;
+    if (m_completer->completionContext() !=  LiteApi::CompleterImportContext) {
+        int pos = m_completer->completionPrefix().indexOf(m_completer->separator());
+        if (pos != -1) {
+            offset -= pos+1;
+        }
     }
     cursor.movePosition(QTextCursor::Left,QTextCursor::MoveAnchor,offset);
     QRect cr = m_editor->cursorRect(cursor);

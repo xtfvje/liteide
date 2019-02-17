@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -379,9 +379,8 @@ LiteEditorWidgetBase::LiteEditorWidgetBase(LiteApi::IApplication *app, QWidget *
 
     setLayoutDirection(Qt::LeftToRight);
     viewport()->setMouseTracking(true);
-    m_defaultWordWrap = false;
-    m_wordWrapOverridden = false;
-    m_wordWrap = false;
+
+    m_allowVscrollLastLine = true;
     m_lineNumbersVisible = true;
     m_navigateWidgetVisible = true;
     m_marksVisible = true;
@@ -423,6 +422,7 @@ LiteEditorWidgetBase::LiteEditorWidgetBase(LiteApi::IApplication *app, QWidget *
     connect(this, SIGNAL(updateRequest(QRect, int)), this, SLOT(slotUpdateRequest(QRect, int)));
     connect(this->document(),SIGNAL(contentsChange(int,int,int)),this,SLOT(editContentsChanged(int,int,int)));
     connect(this,SIGNAL(selectionChanged()),this,SLOT(slotSelectionChanged()));
+    connect(this->verticalScrollBar(),SIGNAL(rangeChanged(int,int)),this,SLOT(verticalScrollBarRangeChanged(int,int)));
 
     QTextDocument *doc = this->document();
     if (doc) {
@@ -1301,11 +1301,27 @@ QByteArray LiteEditorWidgetBase::saveState() const
     }
     stream << foldedBlocks;
 
-    // store word wrap state
-    stream << m_wordWrapOverridden;
-    stream << m_wordWrap;
-
     return state;
+}
+
+void LiteEditorWidgetBase::verticalScrollBarRangeChanged(int minnum, int /*maxnum*/)
+{
+    if (!m_allowVscrollLastLine) {
+        return;
+    }
+    QScrollBar *bar = this->verticalScrollBar();
+    bar->blockSignals(true);
+    int h = this->document()->size().height();
+    if (h > 1) {
+        h--;
+    }
+    bar->setMaximum(minnum+h);
+    bar->blockSignals(false);
+}
+
+
+void LiteEditorWidgetBase::setAllowVscrollLastLine(bool b) {
+    m_allowVscrollLastLine = b;
 }
 
 bool LiteEditorWidgetBase::restoreState(const QByteArray &state)
@@ -1345,12 +1361,6 @@ bool LiteEditorWidgetBase::restoreState(const QByteArray &state)
     verticalScrollBar()->setValue(vval);
     horizontalScrollBar()->setValue(hval);
     saveCurrentCursorPositionForNavigation();
-
-    if (version >= 2) {
-        stream >> m_wordWrapOverridden;
-        stream >> m_wordWrap;
-        setWordWrap(m_wordWrap);
-    }
 
     return true;
 }
@@ -1543,29 +1553,14 @@ void LiteEditorWidgetBase::setFindOption(LiteApi::FindOption *opt)
     viewport()->update();
 }
 
-void LiteEditorWidgetBase::setWordWrap(bool wrap)
+void LiteEditorWidgetBase::setLineWrap(bool wrap)
 {
     setLineWrapMode(wrap ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
-    m_wordWrap = wrap;
-    emit wordWrapChanged(wrap);
 }
 
-bool LiteEditorWidgetBase::isWordWrap() const
+bool LiteEditorWidgetBase::isLineWrap() const
 {
     return this->lineWrapMode() != QPlainTextEdit::NoWrap;
-}
-
-void LiteEditorWidgetBase::setWordWrapOverride(bool wrap)
-{
-    m_wordWrapOverridden = true;
-    this->setWordWrap(wrap);
-}
-
-void LiteEditorWidgetBase::setDefaultWordWrap(bool wrap)
-{
-    if (!m_wordWrapOverridden) {
-        this->setWordWrap(wrap);
-    }
 }
 
 void LiteEditorWidgetBase::gotoLineStart()
@@ -1694,7 +1689,7 @@ void LiteEditorWidgetBase::duplicate()
 void LiteEditorWidgetBase::cutLine()
 {
     maybeSelectLine();
-    cut();
+    QPlainTextEdit::cut();
 }
 
 // ctrl+ins
@@ -2161,6 +2156,8 @@ bool LiteEditorWidgetBase::autoBackspace(QTextCursor &cursor)
     QTextDocument *doc = cursor.document();
     const QChar lookAhead = doc->characterAt(pos);
     const QChar lookBehind = doc->characterAt(pos - 1);
+
+
 //    const QChar lookFurtherBehind = doc->characterAt(pos - 2);
 
     if ( (lookBehind == QLatin1Char('(') && lookAhead == QLatin1Char(')')) ||
@@ -2330,6 +2327,49 @@ void LiteEditorWidgetBase::convertCaseSwap()
     this->transformSelection(QString_toSwapCase);
 }
 
+void LiteEditorWidgetBase::convertTabToSpaces()
+{
+    switchTabToSpace(true);
+}
+
+void LiteEditorWidgetBase::convertSpacesToTab()
+{
+    switchTabToSpace(false);
+}
+
+void LiteEditorWidgetBase::switchTabToSpace(bool tabtospace)
+{
+    if (hasBlockSelection()) {
+         return;
+    }
+    QTextCursor cursor = this->textCursor();
+
+    if (!cursor.hasSelection()) {
+        //TODO select tab or spaces
+        return;
+    }
+    int pos = cursor.selectionStart();
+
+    QString text = cursor.selectedText();
+    QString transformedText = text;
+    if (tabtospace) {
+        transformedText.replace("\t",QString(m_nTabSize,' '));
+    } else {
+        transformedText.replace(QString(m_nTabSize,' '),"\t");
+    }
+
+    if (transformedText == text) {
+        return;
+    }
+
+    cursor.insertText(transformedText);
+
+    cursor.setPosition(pos);
+    cursor.setPosition(pos+transformedText.length(), QTextCursor::KeepAnchor);
+    this->setTextCursor(cursor);
+}
+
+
 static int trailingWhitespaces(const QString &text)
 {
     int i = 0;
@@ -2367,30 +2407,30 @@ void LiteEditorWidgetBase::keyPressEvent(QKeyEvent *e)
     this->m_moveLineUndoHack = false;
     bool ro = isReadOnly();
 
-    if (m_inBlockSelectionMode) {
-        if (e == QKeySequence::Cut) {
-            if (!ro) {
-                cut();
-                e->accept();
-                return;
-            }
-        } else if (e == QKeySequence::Delete || e->key() == Qt::Key_Backspace) {
-            if (!ro) {
+    if (e == QKeySequence::Cut) {
+        if (!ro) {
+            cut();
+            e->accept();
+            return;
+        }
+    } else if (e == QKeySequence::Delete || e->key() == Qt::Key_Backspace) {
+        if (!ro) {
+            if (m_inBlockSelectionMode) {
                 removeBlockSelection();
                 e->accept();
                 return;
             }
-        } else if (e == QKeySequence::Paste) {
-            if (!ro) {
-                paste();
-                e->accept();
-                return;
-            }
-        } else if (e == QKeySequence::SelectAll) {
-            selectAll();
+        }
+    } else if (e == QKeySequence::Paste) {
+        if (!ro) {
+            paste();
             e->accept();
             return;
         }
+    } else if (e == QKeySequence::SelectAll) {
+        selectAll();
+        e->accept();
+        return;
     }
 
     if ( e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return ) {
@@ -2474,6 +2514,17 @@ void LiteEditorWidgetBase::keyPressEvent(QKeyEvent *e)
                                    | Qt::AltModifier
                                    | Qt::MetaModifier)) == Qt::NoModifier
                 && !cursor.hasSelection()) {
+
+                int pos = cursor.position();
+                if (pos >= 1) {
+                    QTextDocument *doc = cursor.document();
+                    const QChar lookAhead = doc->characterAt(pos-1);
+                    if (lookAhead == ' ') {
+                        this->indentText(cursor,false);
+                        e->accept();
+                        return;
+                    }
+                }
                 if (this->autoBackspace(cursor)) {
                     this->setTextCursor(cursor);
                     e->accept();
@@ -2844,8 +2895,13 @@ void LiteEditorWidgetBase::indentEnter(QTextCursor cur)
         }
         i++;
     }
-    tab += space/m_nTabSize;
-    inText += this->tabText(tab);
+    if (tab == 0) {
+        tab += space/m_nTabSize;
+        inText += QString(m_nTabSize*tab,' ');
+    } else {
+        tab += space/m_nTabSize;
+        inText += this->tabText(tab);
+    }
     if (!text.isEmpty()) {
         if (pos >= text.size()) {
             const QChar ch = text.at(text.size()-1);
@@ -3523,8 +3579,11 @@ void LiteEditorWidgetBase::cut()
         removeBlockSelection();
         return;
     }
+    QTextCursor cur = this->textCursor();
+    if (!cur.hasSelection()) {
+        maybeSelectLine();
+    }
     QPlainTextEdit::cut();
-    //collectToCircularClipboard();
 }
 
 void LiteEditorWidgetBase::selectAll()

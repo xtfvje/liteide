@@ -1001,6 +1001,10 @@ LiteIDE это простая кросплатформенная среда ра
         <source>Debug File</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>File Search</source>
+        <translation type="unfinished">Поиск файлов</translation>
+    </message>
 </context>
 <context>
     <name>FileBrowserOption</name>
@@ -1251,6 +1255,10 @@ Want to remove all the search items?</source>
         <source>Warning! Replace text is whitespace.
 Want to replace to all the search items to whitespace?</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File Search</source>
+        <translation type="unfinished">Поиск файлов</translation>
     </message>
 </context>
 <context>
@@ -2896,10 +2904,6 @@ Success: %2.</oldsource>
         <translation>Выбрать всё</translation>
     </message>
     <message>
-        <source>Word Wrap (MimeType)</source>
-        <translation>Перенос слов (MimeType)</translation>
-    </message>
-    <message>
         <source>Toggle Comment</source>
         <translation>Закомментировать/раскомментировать</translation>
     </message>
@@ -3169,6 +3173,22 @@ Success: %2.</oldsource>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Tab To Spaces</source>
+        <translation type="unfinished">Табуляции в пробелы</translation>
+    </message>
+    <message>
+        <source>Spaces To Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Convert Tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Wrap (MimeType)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LiteEditorOption</name>
@@ -3335,6 +3355,10 @@ Success: %2.</oldsource>
     </message>
     <message>
         <source>Display indent guide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Allow vertical scrolling to the last line [*]</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

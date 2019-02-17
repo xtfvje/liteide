@@ -1,7 +1,7 @@
 /**************************************************************************
 ** This file is part of LiteIDE
 **
-** Copyright (c) 2011-2016 LiteIDE Team. All rights reserved.
+** Copyright (c) 2011-2019 visualfc. All rights reserved.
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,10 @@ public:
     virtual LiteApi::IFileSearch* findFileSearch(const QString &mime);
     virtual QList<LiteApi::IFileSearch*> fileSearchList() const;
     virtual void setCurrentSearch(LiteApi::IFileSearch *search);
+    virtual void showFileSearch(const QString &text, const QString &filter, const QString &path);
 public slots:
+    void aboutToShowFolderContextMenu(QMenu *menu,LiteApi::FILESYSTEM_CONTEXT_FLAG flag, const QFileInfo &info);
+    void fmctxFileSearch();
     virtual void newSearch();
     void activated(const Find::SearchResultItem &item);
     void currentSearchItemChanged(int);
@@ -60,6 +63,8 @@ protected:
     Find::Internal::SearchResultWidget *m_searchResultWidget;
     QList<LiteApi::IFileSearch*> m_fileSearchList;
     LiteApi::IFileSearch    *m_currentSearch;
+    QAction        *m_fmctxFileSearchAction;
+    QFileInfo       m_fmctxFileInfo;
 };
 
 #endif // FILESEARCHMANAGER_H
